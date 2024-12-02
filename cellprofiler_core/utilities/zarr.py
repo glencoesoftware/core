@@ -204,9 +204,16 @@ class ZarrReader(object):
         if 'plate' not in attrs or 'wells' not in attrs['plate']:
             return False
         well_data = attrs['plate']['wells']
+        if not well_data:
+            # Empty well data for some reason
+            return False
         mapper = {}
-        if 'column_index' in well_data[0]:
-            # Standard format
+        if "columnIndex" in well_data[0]:
+            # NGFF v0.4 format
+            for row in well_data:
+                mapper[(str(row['columnIndex']), str(row['rowIndex']))] = row['path']
+        elif 'column_index' in well_data[0]:
+            # Older bioformats2raw format
             for row in well_data:
                 mapper[(str(row['column_index']), str(row['row_index']))] = row['path']
         else:
